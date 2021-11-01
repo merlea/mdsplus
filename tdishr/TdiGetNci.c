@@ -655,8 +655,9 @@ int Tdi1GetNci(opcode_t opcode __attribute__((unused)), int narg,
   if (STATUS_OK && key_ptr->item_dtype == DTYPE_NID && out_ptr->pointer)
     out_ptr->pointer->dtype = DTYPE_NID;
   if (STATUS_OK && out_ptr->pointer && out_ptr->pointer->class == CLASS_A &&
+      out_ptr->pointer->length == 0 &&
       ((struct descriptor_a *)(out_ptr->pointer))->arsize == 0)
-    status = TreeNNF;
+    status = TreeNODATA;
 
   return status;
 }
