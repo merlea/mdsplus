@@ -27,6 +27,7 @@ LIBS=@LIBS@ @LIBRESOLV@ $(LIBSOCKET)
 
 MdsIpShr    = @MAKESHLIBDIR@@LIBPRE@MdsIpShr@SHARETYPE@ $(IMPLIB_MdsIpShr)
 MdsIpSrvShr = @MAKESHLIBDIR@@LIBPRE@MdsIpSrvShr@SHARETYPE@ $(IMPLIB_MdsIpSrvShr)
+MdsIpSSH    = @MAKESHLIBDIR@@LIBPRE@MdsIpSSH@SHARETYPE@
 MdsIpTCP    = @MAKESHLIBDIR@@LIBPRE@MdsIpTCP@SHARETYPE@
 MdsIpTCPV6  = @MAKESHLIBDIR@@LIBPRE@MdsIpTCPV6@SHARETYPE@
 MdsIpUDT    = @MAKESHLIBDIR@@LIBPRE@MdsIpUDT@SHARETYPE@
@@ -63,6 +64,8 @@ ETHV6_HEADERS = $(addprefix $(io_srcdir)/,ioroutinesV6.h ioroutinesx.h)
 TCP_HEADERS = $(ETH_HEADERS) $(io_srcdir)/ioroutinestcp.h
 UDT_HEADERS = $(ETH_HEADERS) $(io_srcdir)/ioroutinesudt.h
 
+SSH_SOURCES = $(io_srcdir)/IoRoutinesSsh.c
+SSH_OBJECTS = $(SSH_SOURCES:$(srcdir)/%.c=%.o)
 TCP_SOURCES = $(io_srcdir)/IoRoutinesTcp.c
 TCP_OBJECTS = $(TCP_SOURCES:$(srcdir)/%.c=%.o)
 TCPV6_SOURCES = $(io_srcdir)/IoRoutinesTcpV6.c
@@ -73,6 +76,7 @@ UDT_OBJECTS = $(UDT_SOURCES:$(srcdir)/%.c=%.o)
 UDTV6_SOURCES = $(io_srcdir)/IoRoutinesUdtV6.c
 UDTV6_OBJECTS = $(UDTV6_SOURCES:$(srcdir)/%.c=%.o)
 
+$(SSH_OBJECTS)                 : | --io_routines-dir
 $(TCP_OBJECTS) $(TCPV6_OBJECTS): $(TCP_HEADERS) | --io_routines-dir
 $(UDT_OBJECTS) $(UDTV6_OBJECTS): $(UDT_HEADERS) $(UDT4_OBJECTS) | --io_routines-dir
 
@@ -92,8 +96,8 @@ $(UDT4_OBJECTS): | --udt4-dirs
 
 
 CLEAN_OBJECTS = $(COMPRESSION_OBJECTS) $(LIB_OBJECTS) $(UDT4_OBJECTS)\
- $(TCP_OBJECTS) $(UDT_OBJECTS) $(TCPV6_OBJECTS) $(UDTV6_OBJECTS)
-ALL_SOURCES = $(LIB_SOURCES) $(TCP_SOURCES) $(TCPV6_SOURCES) $(UDT_SOURCES) $(UDTV6_SOURCES)
+ $(SSH_OBJECTS) $(TCP_OBJECTS) $(UDT_OBJECTS) $(TCPV6_OBJECTS) $(UDTV6_OBJECTS)
+ALL_SOURCES = $(LIB_SOURCES) $(SSH_SOURCES) $(TCP_SOURCES) $(TCPV6_SOURCES) $(UDT_SOURCES) $(UDTV6_SOURCES)
 
 bin_SCRIPTS =
 @MINGW_TRUE@bin_SCRIPTS += @MAKEBINDIR@mdsip_service.exe.manifest
@@ -137,6 +141,7 @@ primary : \
 
 secundary : primary \
 	$(modules) \
+	$(MdsIpSSH) \
 	$(MdsIpTCP) \
 	$(MdsIpTCPV6) \
 	$(IPV6_UDT) \
@@ -157,6 +162,7 @@ clean :
 	@ $(RM) $(PROGRAMS)
 	@ $(RM) @MAKEETCDIR@mdsip.hosts
 	@ $(RM) @MAKEETCDIR@multi.hosts
+	@ $(RM) @MAKELIBDIR@@LIBPRE@MdsIpSSH@SHARETYPE@
 	@ $(RM) @MAKELIBDIR@@LIBPRE@MdsIpTCP@SHARETYPE@
 	@ $(RM) @MAKELIBDIR@@LIBPRE@MdsIpTCPV6@SHARETYPE@
 	@ $(RM) @MAKELIBDIR@@LIBPRE@MdsIpUDT@SHARETYPE@
@@ -177,6 +183,7 @@ endif
 	fi;
 	$(INSTALL) -m 755  @MAKEETCDIR@mdsip.hosts $(sysconfdir)
 	$(INSTALL) -m 755  @MAKEETCDIR@multi.hosts $(sysconfdir)
+	$(INSTALL) -m 755 $(MdsIpSSH) @libdir@
 	$(INSTALL) -m 755 $(MdsIpTCP) @libdir@
 	$(INSTALL) -m 755 $(MdsIpTCPV6) @libdir@
 @MINGW_FALSE@	$(INSTALL) -m 755 $(IPV6_UDT) @libdir@
@@ -212,6 +219,9 @@ $(MDSIP_UTIL) : mdsiputil.o mdsip_socket_io.o mdsip_parallel.o $(COMPRESSION_OBJ
 $(MdsIpShr): $(LIB_OBJECTS) $(COMPRESSION_OBJECTS)
 	$(LINK.c) $(OUTPUT_OPTION) $^ @LINKSHARED@ $(EXTRALIBS) $(LIBS) -lMdsShr -lTreeShr -lTdiShr $(MAKE_IMPLIB_MdsIpShr)
 LINK_MDSIPSHR = -L@MAKESHLIBDIR@ -lMdsIpShr -lMdsShr
+
+$(MdsIpSSH): $(SSH_OBJECTS) $(MdsIpShr)
+	$(LINK.c) $(OUTPUT_OPTION) @LINKSHARED@ $(SSH_OBJECTS) $(LINK_MDSIPSHR) $(LIBS)
 
 $(MdsIpTCP): $(TCP_OBJECTS) $(MdsIpShr)
 	$(LINK.c) $(OUTPUT_OPTION) @LINKSHARED@ $(TCP_OBJECTS) $(LINK_MDSIPSHR) $(LIBS)
