@@ -1,7 +1,9 @@
 #ifndef __MDSIP_H__
 #define __MDSIP_H__
 #define MdsLib_H
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* glibc2 needs this */
+#endif
 
 #ifndef _WIN32
 #include <sysexits.h>

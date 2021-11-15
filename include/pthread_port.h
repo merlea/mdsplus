@@ -1,6 +1,8 @@
 #ifndef PTHREAD_PORT_H
 #define PTHREAD_PORT_H
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <STATICdef.h>
 #include <status.h>
 #include <stdlib.h>
