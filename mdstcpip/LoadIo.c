@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern IoRoutines tunnel_routines;
 extern IoRoutines thread_routines;
+extern IoRoutines hss_routines;
 
 IoRoutines *LoadIo(char *protocol_in) {
   if (protocol_in == 0)
@@ -49,6 +50,10 @@ IoRoutines *LoadIo(char *protocol_in) {
   if (strcmp(protocol, "THREAD") == 0) {
     free(protocol);
     return &thread_routines;
+  }
+ if (strcmp(protocol, "HSS") == 0) {
+    free(protocol);
+    return &hss_routines;
   }
   char *image = strcpy((char *)malloc(strlen(protocol) + 36), "MdsIp");
   strcat(image, protocol);
